@@ -1,3 +1,0 @@
-!Id<3ZmODTJ,7p
-
-provmicrosql02.database.windows.net
