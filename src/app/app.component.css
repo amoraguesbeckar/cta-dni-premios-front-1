@@ -1,0 +1,165 @@
+h1 {
+    margin: 0;
+}
+
+.navbar-gradient {
+    background: rgb(39, 157, 46);
+    background: linear-gradient(90deg,
+            rgba(39, 157, 46, 1) 0%,
+            rgba(38, 186, 195, 1) 88%);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: inline-block;
+    justify-content: center;
+    width: 99vw;
+    flex-wrap: nowrap;
+    padding: 0.5rem;
+}
+
+.navbar-logo {
+    width: 40px;
+    height: auto;
+    margin-right: 10px;
+}
+
+.navbar-title {
+    color: #ffffff;
+}
+
+.navbar-title-provincia {
+    font-size: 20px;
+    font-weight: 650;
+}
+
+.navbar-title-microcreditos {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.navbar-cta-dni-premios {
+    color: #ffffff;
+    font-weight: 500;
+    margin-left: 20px;
+}
+
+.table-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 30px;
+}
+
+@media (max-width: 768px) {
+    .table-container {
+        min-height: auto;
+    }
+}
+
+.prome-table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid #279D2E;
+}
+
+.prome-table {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.prome-table thead th {
+    background-color: #279D2E;
+    color: #ffffff;
+}
+
+.prome-table tbody td {
+    background-color: #ffffff;
+    border-right: 1px solid #279D2E;
+}
+
+.prome-table tbody td:last-child {
+    border-right: none;
+}
+
+.prome-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.small-width-column {
+    width: 5.5rem;
+}
+
+.light-red {
+    background-color: #F9DCDF !important;
+}
+
+.light-green {
+    background-color: #DDF9EC !important;
+}
+
+.light-yellow {
+    background-color: #FFF5D6 !important;
+}
+
+.btn-prome-blue {
+    background-color: #25B4BD;
+    color: white;
+}
+
+.btn-action {
+    margin: 3px 8px;
+}
+
+.modal-container {
+    border-radius: 10px;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.15);
+    padding: 20px;
+}
+
+.modal-header {
+    background-color: #279D2E;
+    color: #ffffff;
+    padding: 10px;
+}
+
+.modal-title {
+    margin: 0;
+}
+
+.modal-body {
+    padding: 10px;
+    height: calc(100% - 56px);
+    overflow-y: auto;
+}
+
+.modal-body p {
+    margin: 5px 0;
+}
+
+.modal-footer {
+    padding: 10px;
+    text-align: right;
+}
+
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1040;
+}
+
+.close {
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.text-right {
+    float: right;
+}
+
+.block-display {
+    display: block;
+}

@@ -1,0 +1,370 @@
+<nav class="navbar navbar-expand-lg navbar-gradient">
+  <div class="container-fluid">
+    <div class="navbar-brand d-flex align-items-center">
+      <img class="navbar-logo" src="../../assets/logoWhiteP.png" alt="logo">
+      <div class="navbar-title">
+        <h1 class="navbar-title-provincia">Provincia</h1>
+        <h1 class="navbar-title-microcreditos">Microcréditos</h1>
+      </div>
+    </div>
+    <div class="navbar-nav ms-auto">
+      <span class="navbar-text navbar-cta-dni-premios">
+        Cuenta DNI Premios
+      </span>
+    </div>
+  </div>
+</nav>
+
+
+<br><br><br>
+
+<!-- Filtros -->
+<div class="container mb-4">
+  <div class="row">
+    <div class="col text-end">
+      <p>Filtrar por estado: </p>
+    </div>
+    <div class="col">
+      <select class="form-select" [(ngModel)]="selectedSegmentAnalysis" (change)="filterClientsBySegmentAnalysis()">
+        <option value="">Todos</option>
+        <option value="Aprobado">Aprobados</option>
+        <option value="Rechazado">Rechazados</option>
+        <option value="Observado">Observados</option>
+        <option value="Pendiente">Pendientes</option>
+      </select>
+    </div>
+    <div class="col">
+      <button class="btn btn-prome-blue" (click)="saveChanges()" [disabled]="isSaving">
+        {{ buttonText }}
+      </button>
+    </div>
+    <div class="col">
+      <button class="btn btn-success">
+        Descargar Excel
+      </button>
+    </div>
+  </div>
+</div>
+<div class="text-center mb-4">
+  <strong>Total de registros:</strong> {{ filteredClients.length }}
+</div>
+
+<!--Spinner-->
+<br>
+<div class="d-flex justify-content-center mt-3" *ngIf="spinner">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+<br>
+
+<!-- Table -->
+<div class="table-container">
+  <table class="table prome-table" style="border-radius: 10px;">
+    <thead class="table-bordered border-success">
+      <tr>
+        <th scope="col">Nombre</th>
+        <th scope="col">Apellido</th>
+        <th scope="col">DNI</th>
+        <th scope="col">Email</th>
+        <th scope="col">CBU</th>
+        <th scope="col">CUIT</th>
+        <th scope="col">Acciones Segmentos</th>
+        <th scope="col">Acciones Finanzas</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let client of filteredClients">
+        <td [ngClass]="{
+          'light-red': client.segmentAnalysis === 'Rechazado',
+          'light-green': client.segmentAnalysis === 'Aprobado',
+          'light-yellow': client.segmentAnalysis === 'Observado'
+        }">{{ client.firstName }}</td>
+        <td [ngClass]="{
+          'light-red': client.segmentAnalysis === 'Rechazado',
+          'light-green': client.segmentAnalysis === 'Aprobado',
+          'light-yellow': client.segmentAnalysis === 'Observado'
+        }">{{ client.lastName }}</td>
+        <td [ngClass]="{
+          'light-red': client.segmentAnalysis === 'Rechazado',
+          'light-green': client.segmentAnalysis === 'Aprobado',
+          'light-yellow': client.segmentAnalysis === 'Observado'
+        }">{{ client.dni }}</td>
+        <td [ngClass]="{
+          'light-red': client.segmentAnalysis === 'Rechazado',
+          'light-green': client.segmentAnalysis === 'Aprobado',
+          'light-yellow': client.segmentAnalysis === 'Observado'
+        }">{{ client.email }}</td>
+        <td [ngClass]="{
+          'light-red': client.segmentAnalysis === 'Rechazado',
+          'light-green': client.segmentAnalysis === 'Aprobado',
+          'light-yellow': client.segmentAnalysis === 'Observado'
+        }" class="small-width-column">{{ client.CBU }}</td>
+        <td [ngClass]="{
+          'light-red': client.segmentAnalysis === 'Rechazado',
+          'light-green': client.segmentAnalysis === 'Aprobado',
+          'light-yellow': client.segmentAnalysis === 'Observado'
+        }" class="small-width-column">{{ client.cuit }}</td>
+        <td [ngClass]="{
+          'light-red': client.segmentAnalysis === 'Rechazado',
+          'light-green': client.segmentAnalysis === 'Aprobado',
+          'light-yellow': client.segmentAnalysis === 'Observado'
+        }">
+          <button class="btn btn-sm btn-action btn-prome-blue" (click)="openModal(client)">
+            Detalle
+          </button>
+
+          <button class="btn btn-sm btn-warning btn-action" [disabled]="isButtonDisabled(client, 'reject')"
+            (click)="openObservationModal(client)">
+            Observar
+          </button>
+          <button class="btn btn-sm btn-success btn-action" [disabled]="isButtonDisabled(client, 'accept')"
+            (click)="handleAnalysis(client, 'segmentAnalysisApproved')">
+            <i class="fa-solid fa-check"></i>
+          </button>
+          <button class="btn btn-sm btn-danger btn-action" [disabled]="isButtonDisabled(client, 'reject')"
+            (click)="handleAnalysis(client, 'segmentAnalysisRejected')">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </td>
+        <td [ngClass]="{
+          'light-red': client.financeAnalysis === 'Rechazado',
+          'light-green': client.financeAnalysis === 'Aprobado',
+          'light-yellow': client.financeAnalysis === 'Observado'
+        }">
+          <button class="btn btn-sm btn-action btn-prome-blue" (click)="openModal(client)">
+            Detalle
+          </button>
+          <button class="btn btn-sm btn-success btn-action" [disabled]="isButtonDisabled(client, 'accept')"
+            (click)="handleAnalysis(client, 'financeAnalysisApproved')">
+            <i class="fa-solid fa-check"></i>
+          </button>
+          <button class="btn btn-sm btn-danger btn-action" [disabled]="isButtonDisabled(client, 'reject')"
+            (click)="handleAnalysis(client, 'financeAnalysisRejected')">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal Detalle Segmentos -->
+<div *ngIf="showModal; else noModal">
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show" tabindex="-1" style="display: block;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Detalles del cliente</h5>
+          <button type="button" class="btn close" (click)="closeModal()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body" style="height: calc(100% - 56px); overflow-y: auto;">
+          <div class="table-container">
+            <table class="table prome-table" style="border-radius: 10px;">
+              <tbody>
+                <tr>
+                  <td>Nombre</td>
+                  <td>{{ selectedClient?.firstName }}</td>
+                </tr>
+                <tr>
+                  <td>Apellido</td>
+                  <td>{{ selectedClient?.lastName }}</td>
+                </tr>
+                <tr>
+                  <td>DNI</td>
+                  <td>{{ selectedClient?.dni }}</td>
+                </tr>
+                <tr>
+                  <td>Correo electrónico</td>
+                  <td>{{ selectedClient?.email }}</td>
+                </tr>
+                <tr>
+                  <td>Confirmación correo electrónico</td>
+                  <td>{{ selectedClient?.email }}</td>
+                </tr>
+                <tr>
+                  <td>Tipo de teléfono</td>
+                  <td>{{ selectedClient?.phoneType }}</td>
+                </tr>
+                <tr>
+                  <td>Código de área</td>
+                  <td>{{ selectedClient?.areaCode }}</td>
+                </tr>
+                <tr>
+                  <td>Número de teléfono</td>
+                  <td>{{ selectedClient?.phoneNumber }}</td>
+                </tr>
+                <tr>
+                  <td>Período de la promoción</td>
+                  <td>{{ selectedClient?.salesPeriod }}</td>
+                </tr>
+                <tr>
+                  <td>Fecha de liquidación préstamo</td>
+                  <td>{{ selectedClient?.loanSettlementDate }}</td>
+                </tr>
+                <tr>
+                  <td>Monto de ventas por Cuenta DNI Comercios</td>
+                  <td>{{ selectedClient?.salesAmountCtaDNICom }}</td>
+                </tr>
+                <tr>
+                  <td>CUIT</td>
+                  <td>{{selectedClient?.cuit}}</td>
+                </tr>
+                <tr>
+                  <td>Link del adjunto</td>
+                  <td><a href="{{ selectedClient?.attachmentLink }}">Link</a></td>
+                </tr>
+                <tr>
+                  <td>CBU</td>
+                  <td>{{ selectedClient?.CBU }}</td>
+                </tr>
+                <tr>
+                  <td>Crédito BIP</td>
+                  <td>{{ selectedClient?.BIPCredit }}</td>
+                </tr>
+                <tr>
+                  <td>Análisis de segmento</td>
+                  <td>{{ selectedClient?.segmentAnalysis }}</td>
+                </tr>
+                <tr>
+                  <td>Análisis de administración de finanzas</td>
+                  <td>{{ selectedClient?.financeAnalysis }}</td>
+                </tr>
+                <tr>
+                  <td>Observación</td>
+                  <td>{{ selectedClient?.observation }}</td>
+                </tr>
+                <tr>
+                  <td>¿Pago realizado?</td>
+                  <td>{{ selectedClient?.paymentMade ? 'Si' : 'No' }}</td>
+                </tr>
+                <tr>
+                  <td>Importe a transferir</td>
+                  <td>{{ selectedClient?.transferAmount }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #noModal></ng-template>
+
+<!-- Modal Detalle Finanzas-->
+<div *ngIf="showModal; else noModal">
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show" tabindex="-1" style="display: block;">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Detalles del cliente</h5>
+          <button type="button" class="btn close" (click)="closeModal()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body" style="height: calc(100% - 56px); overflow-y: auto;">
+          <div class="table-container">
+            <table class="table prome-table" style="border-radius: 10px;">
+              <tbody>
+                <tr>
+                  <td>Nombre</td>
+                  <td>{{ selectedClient?.firstName }}</td>
+                </tr>
+                <tr>
+                  <td>Apellido</td>
+                  <td>{{ selectedClient?.lastName }}</td>
+                </tr>
+                <tr>
+                  <td>DNI</td>
+                  <td>{{ selectedClient?.dni }}</td>
+                </tr>
+                <tr>
+                  <td>CUIT</td>
+                  <td>{{selectedClient?.cuit}}</td>
+                </tr>
+                <tr>
+                  <td>Fecha de liquidación préstamo</td>
+                  <td>{{ selectedClient?.loanSettlementDate }}</td>
+                </tr>
+                <tr>
+                  <td>Monto de ventas por Cuenta DNI Comercios</td>
+                  <td>{{ selectedClient?.salesAmountCtaDNICom }}</td>
+                </tr>
+               
+                <tr>
+                  <td>Link del adjunto</td>
+                  <td><a href="{{ selectedClient?.attachmentLink }}">Link</a></td>
+                </tr>
+                <tr>
+                  <td>CBU</td>
+                  <td>{{ selectedClient?.CBU }}</td>
+                </tr>
+                <tr>
+                  <td>Crédito BIP</td>
+                  <td>{{ selectedClient?.BIPCredit }}</td>
+                </tr>
+                <tr>
+                  <td>Análisis de segmento</td>
+                  <td>{{ selectedClient?.segmentAnalysis }}</td>
+                </tr>
+                <tr>
+                  <td>Análisis de administración de finanzas</td>
+                  <td>{{ selectedClient?.financeAnalysis }}</td>
+                </tr>
+                <tr>
+                  <td>Observación</td>
+                  <td>{{ selectedClient?.observation }}</td>
+                </tr>
+                <tr>
+                  <td>¿Pago realizado?</td>
+                  <td>{{ selectedClient?.paymentMade ? 'Si' : 'No' }}</td>
+                </tr>
+                <tr>
+                  <td>Importe a transferir</td>
+                  <td>{{ selectedClient?.transferAmount }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #noModal></ng-template>
+
+<!-- Modal Observar -->
+<div *ngIf="showObservationModal; else noObservationModal">
+  <div class="modal-backdrop fade show"></div>
+  <div class="modal fade show" tabindex="-1" [ngClass]="{'block-display': true}">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Observar cliente</h5>
+          <button type="button" class="btn close" (click)="closeObservationModal()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body" [ngClass]="{'modal-body': true}">
+          <div class="form-group">
+            <textarea class="form-control" id="observationInput" rows="8" maxlength="1200" [(ngModel)]="observationText"
+              (input)="updateCharacterCount()"></textarea>
+            <small class="text-muted character-count text-right mt-1">{{ characterCount }}/{{ maxCharacterCount
+              }}</small>
+          </div>
+          <br>
+          <div class="my-2">
+            <button class="btn btn-primary" (click)="observeClient(selectedClient)"
+              [disabled]="observationText.length === 0">Confirmar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<ng-template #noObservationModal></ng-template>
