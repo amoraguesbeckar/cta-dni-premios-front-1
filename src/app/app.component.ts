@@ -4,6 +4,9 @@ import { ClientService } from './services/client.service';
 import { MailService } from './services/mail.service';
 import { patchDTO } from './models/patchdto.model';
 import { RecordPatch } from './models/recordPatch.model';
+import { saveAs } from 'file-saver';
+import * as XLSX from 'xlsx';
+
 
 @Component({
   selector: 'app-root',
@@ -17,18 +20,19 @@ export class AppComponent implements OnInit {
   clients: Client[] = [];
   recordsToBePatched: RecordPatch[] = [];
 
-  //Filters
+  //Filters 
   selectedSegmentAnalysis: string = '';
   filteredClients: Client[] = [];
 
   //Spinner
-  spinner: boolean = true;
+  spinner: boolean = false;
 
   //Modals
   selectedClient: Client | null = null;
   showModal: boolean = false;
-  showObservationModal: boolean = false;
+  modalType!: string;
   observationText: string = '';
+  imageModal: string = '';
 
   //CharactersAllowed
   maxCharacterCount: number = 1000;
@@ -38,6 +42,7 @@ export class AppComponent implements OnInit {
   isSaving: boolean = false;
   buttonText: string = 'Guardar cambios';
 
+
   constructor(public clientService: ClientService, public mailService: MailService) {
 
     this.selectedClient = new Client(0, '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'Pendiente', '', '', '', '');
@@ -45,17 +50,7 @@ export class AppComponent implements OnInit {
   }
 
   ngOnInit() {
-
-    this.clientService.getClients().subscribe(
-      (response) => {
-        this.clients = response.result
-        this.filteredClients = this.clients;
-        this.spinner = false;
-      },
-      (error) => {
-        console.error(error);
-      }
-    );
+    this.loadData();
   }
 
   //ActionManagment
@@ -70,7 +65,6 @@ export class AppComponent implements OnInit {
 
 
   handleAnalysis(client: Client, type: string) {
-
     switch (type) {
       case "segmentAnalysisApproved":
         client.segmentAnalysis = 'Aprobado';
@@ -103,7 +97,6 @@ export class AppComponent implements OnInit {
   }
 
   updateAnalysis(client: Client, segmentAnalysisNumber: number, json: string) {
-
     this.clientService.handleAction(json).subscribe(
       (response) => {
         this.handleMailSending(client, segmentAnalysisNumber)
@@ -115,7 +108,6 @@ export class AppComponent implements OnInit {
   }
 
   handleMailSending(client: Client, segmentAnalysisNumber: number) {
-
     let mailJson = {
       properties: {
         Customer: client.firstName + client.lastName,
@@ -135,8 +127,6 @@ export class AppComponent implements OnInit {
     );
   }
 
-
-
   observeClient(selectedClient: Client | null) {
     if (selectedClient) {
       selectedClient.segmentAnalysis = 'Observado';
@@ -149,7 +139,7 @@ export class AppComponent implements OnInit {
       this.recordsToBePatched.push(recordToBePatchedObservationSegmento)
       this.filterClientsBySegmentAnalysis();
     }
-    this.closeObservationModal();
+    this.closeModal();
   }
 
 
@@ -168,35 +158,31 @@ export class AppComponent implements OnInit {
 
 
   //Modals
-  openModal(client: Client) {
-    this.selectedClient = client;
+  openModal(type: string, client?: Client, imageUrl?: string): void {
+    this.selectedClient = client || null;
+    this.imageModal = imageUrl ? imageUrl : '';
     this.showModal = true;
+    this.modalType = type;
+
+    if (type === "Observation") {
+      this.observationText = client?.observation || '';
+      this.updateCharacterCount();
+    }
   }
 
-  closeModal() {
+  closeModal(): void {
     this.showModal = false;
-  }
-
-  openObservationModal(client: Client): void {
-    this.selectedClient = client;
-    this.observationText = client.observation;
-    this.showObservationModal = true;
-  }
-
-  closeObservationModal(): void {
-    this.showObservationModal = false;
   }
 
   updateCharacterCount(): void {
     this.characterCount = this.observationText.length;
   }
 
+
   //Save
   saveChanges() {
-
     this.clientService.patchRecords(this.recordsToBePatched);
     //Agregar envío de mail iterando cada actualización
-
     /* 
     let mailJson = {
       "properties": {
@@ -214,7 +200,51 @@ export class AppComponent implements OnInit {
     setTimeout(() => {
       this.isSaving = false;
       this.buttonText = 'Guardar cambios';
-      this.ngOnInit()
+      this.loadData();
     }, 3000);
+  }
+
+  loadData() {
+    this.spinner = true;
+    this.clientService.getClients().subscribe(
+      (response) => {
+        this.clients = response.result
+        this.filteredClients = this.clients;
+        this.spinner = false;
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
+  }
+
+  exportToExcel() {
+    const currentDate = new Date();
+
+    const clientsData = [
+      ['Hace la cuenta - Datos descargados el día: ' + currentDate.toLocaleString()],
+      ['Nombre', 'Apellido', 'DNI', 'Correo electrónico', 'Tipo de teléfono', 'Código de área',
+        'Número de teléfono', 'Período de la promoción', 'Fecha de liquidación préstamo',
+        'Monto de ventas por Cuenta DNI Comercios', 'CUIT', 'Link del adjunto', 'CBU',
+        'Crédito BIP', 'Análisis de segmento', 'Observación', '¿Pago realizado?', 'Importe a transferir'],
+
+      ...this.clients.map(client => [client.firstName, client.lastName, client.dni, client.email,
+      client.phoneType, client.areaCode, client.phoneNumber, client.salesPeriod, client.loanSettlementDate,
+      client.salesAmountCtaDNICom, client.cuit, client.attachmentLink, client.CBU, client.BIPCredit,
+      client.segmentAnalysis, client.observation, client.paymentMade, client.transferAmount]),
+    ];
+
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.aoa_to_sheet(clientsData);
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Datos');
+
+    const excelBuffer: any = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+    const formattedDate = `${currentDate.getDate()}/${currentDate.getMonth() + 1}/${currentDate.getFullYear()}`;
+    const formattedTime = `${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
+    const fileName = `Hace la cuenta - ${formattedDate}-${formattedTime}.xlsx`;
+    const excelFile = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(excelFile, fileName);
   }
 }

@@ -39,7 +39,7 @@
       </button>
     </div>
     <div class="col">
-      <button class="btn btn-success">
+      <button class="btn btn-success" (click)="exportToExcel()">
         Descargar Excel
       </button>
     </div>
@@ -49,17 +49,15 @@
   <strong>Total de registros:</strong> {{ filteredClients.length }}
 </div>
 
+
 <!--Spinner-->
-<br>
-<div class="d-flex justify-content-center mt-3" *ngIf="spinner">
-  <div class="spinner-border text-primary" role="status">
-    <span class="visually-hidden">Loading...</span>
-  </div>
+<div class="spinner-container" *ngIf="spinner">
+  <div class="spinner"></div>
 </div>
-<br>
+
 
 <!-- Table -->
-<div class="table-container">
+<div class="table-container" *ngIf="!spinner">
   <table class="table prome-table" style="border-radius: 10px;">
     <thead class="table-bordered border-success">
       <tr>
@@ -110,12 +108,12 @@
           'light-green': client.segmentAnalysis === 'Aprobado',
           'light-yellow': client.segmentAnalysis === 'Observado'
         }">
-          <button class="btn btn-sm btn-action btn-prome-blue" (click)="openModal(client)">
+          <button class="btn btn-sm btn-action btn-prome-blue" (click)="openModal('Segment', client)">
             Detalle
           </button>
 
           <button class="btn btn-sm btn-warning btn-action" [disabled]="isButtonDisabled(client, 'reject')"
-            (click)="openObservationModal(client)">
+            (click)="openModal('Observation', client)">
             Observar
           </button>
           <button class="btn btn-sm btn-success btn-action" [disabled]="isButtonDisabled(client, 'accept')"
@@ -132,7 +130,7 @@
           'light-green': client.financeAnalysis === 'Aprobado',
           'light-yellow': client.financeAnalysis === 'Observado'
         }">
-          <button class="btn btn-sm btn-action btn-prome-blue" (click)="openModal(client)">
+          <button class="btn btn-sm btn-action btn-prome-blue" (click)="openModal('Finance', client)">
             Detalle
           </button>
           <button class="btn btn-sm btn-success btn-action" [disabled]="isButtonDisabled(client, 'accept')"
@@ -149,11 +147,13 @@
   </table>
 </div>
 
-<!-- Modal Detalle Segmentos -->
 <div *ngIf="showModal; else noModal">
   <div class="modal-backdrop fade show"></div>
   <div class="modal fade show" tabindex="-1" style="display: block;">
-    <div class="modal-dialog">
+
+
+    <!-- Modal Segment -->
+    <div class="modal-dialog" *ngIf="modalType === 'Segment'">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Detalles del cliente</h5>
@@ -215,7 +215,10 @@
                 </tr>
                 <tr>
                   <td>Link del adjunto</td>
-                  <td><a href="{{ selectedClient?.attachmentLink }}">Link</a></td>
+                  <td><a href="javascript:void(0);"
+                      (click)="selectedClient?.attachmentLink && openModal('Image', selectedClient!, selectedClient!.attachmentLink)">Ver
+                      imagen</a>
+                  </td>
                 </tr>
                 <tr>
                   <td>CBU</td>
@@ -228,10 +231,6 @@
                 <tr>
                   <td>Análisis de segmento</td>
                   <td>{{ selectedClient?.segmentAnalysis }}</td>
-                </tr>
-                <tr>
-                  <td>Análisis de administración de finanzas</td>
-                  <td>{{ selectedClient?.financeAnalysis }}</td>
                 </tr>
                 <tr>
                   <td>Observación</td>
@@ -251,15 +250,10 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
-<ng-template #noModal></ng-template>
 
-<!-- Modal Detalle Finanzas-->
-<div *ngIf="showModal; else noModal">
-  <div class="modal-backdrop fade show"></div>
-  <div class="modal fade show" tabindex="-1" style="display: block;">
-    <div class="modal-dialog">
+
+    <!-- Modal Finance -->
+    <div class="modal-dialog" *ngIf="modalType === 'Finance'">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Detalles del cliente</h5>
@@ -295,10 +289,13 @@
                   <td>Monto de ventas por Cuenta DNI Comercios</td>
                   <td>{{ selectedClient?.salesAmountCtaDNICom }}</td>
                 </tr>
-               
+
                 <tr>
                   <td>Link del adjunto</td>
-                  <td><a href="{{ selectedClient?.attachmentLink }}">Link</a></td>
+                  <td><a href="javascript:void(0);"
+                      (click)="selectedClient?.attachmentLink && openModal('Image', selectedClient!, selectedClient!.attachmentLink)">Ver
+                      imagen</a>
+                  </td>
                 </tr>
                 <tr>
                   <td>CBU</td>
@@ -334,19 +331,14 @@
         </div>
       </div>
     </div>
-  </div>
-</div>
-<ng-template #noModal></ng-template>
 
-<!-- Modal Observar -->
-<div *ngIf="showObservationModal; else noObservationModal">
-  <div class="modal-backdrop fade show"></div>
-  <div class="modal fade show" tabindex="-1" [ngClass]="{'block-display': true}">
-    <div class="modal-dialog modal-lg">
+
+    <!-- Modal Observation -->
+    <div class="modal-dialog modal-lg" *ngIf="modalType === 'Observation'">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Observar cliente</h5>
-          <button type="button" class="btn close" (click)="closeObservationModal()">
+          <button type="button" class="btn close" (click)="closeModal()">
             <i class="fa-solid fa-xmark"></i>
           </button>
         </div>
@@ -365,6 +357,22 @@
         </div>
       </div>
     </div>
+
+
+    <!-- Modal Image -->
+    <div class="modal-dialog modal-md" *ngIf="modalType === 'Image'">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Imagen adjunta</h5>
+          <button type="button" class="btn close" (click)="closeModal()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body d-flex justify-content-center">
+          <img [src]="imageModal" alt="Imagen adjunta" height="600px" width="300px">
+        </div>
+      </div>
+    </div>
   </div>
 </div>
-<ng-template #noObservationModal></ng-template>
+<ng-template #noModal></ng-template>
