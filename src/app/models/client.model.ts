@@ -21,6 +21,8 @@ export class Client {
     observation: string;
     paymentMade: string;
     transferAmount: string;
+    paymentReceiptImage: string;
+    paymentObservation: string;
 
     constructor(
         id: number,
@@ -44,7 +46,9 @@ export class Client {
         financeAnalysis: string,
         observation: string,
         paymentMade: string,
-        transferAmount: string) {
+        transferAmount: string,
+        paymentReceiptImage: string,
+        paymentObservation: string) {
 
         this.id = id;
         this.trackingNumber = trackingNumber;
@@ -68,5 +72,7 @@ export class Client {
         this.observation = observation;
         this.paymentMade = paymentMade;
         this.transferAmount = transferAmount;
+        this.paymentReceiptImage = paymentReceiptImage;
+        this.paymentObservation = paymentObservation;
     }
 }

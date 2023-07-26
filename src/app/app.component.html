@@ -20,9 +20,9 @@
 
 <!-- Filtros -->
 <div class="container mb-4">
-  <div class="row">
-    <div class="col text-end">
-      <p>Filtrar por estado: </p>
+  <div class="row d-flex justify-content-center align-items-center">
+    <div class="col">
+      <p class="text-end m-0">Filtrar por estado:</p>
     </div>
     <div class="col">
       <select class="form-select" [(ngModel)]="selectedSegmentAnalysis" (change)="filterClientsBySegmentAnalysis()">
@@ -33,18 +33,19 @@
         <option value="Pendiente">Pendientes</option>
       </select>
     </div>
-    <div class="col">
+    <div class="col d-flex justify-content-center">
       <button class="btn btn-prome-blue" (click)="saveChanges()" [disabled]="isSaving">
         {{ buttonText }}
       </button>
     </div>
-    <div class="col">
+    <div class="col d-flex justify-content-start">
       <button class="btn btn-success" (click)="exportToExcel()">
         Descargar Excel
       </button>
     </div>
   </div>
 </div>
+
 <div class="text-center mb-4">
   <strong>Total de registros:</strong> {{ filteredClients.length }}
 </div>
@@ -67,6 +68,7 @@
         <th scope="col">Email</th>
         <th scope="col">CBU</th>
         <th scope="col">CUIT</th>
+        <th scope="col">Importe</th>
         <th scope="col">Acciones Segmentos</th>
         <th scope="col">Acciones Finanzas</th>
       </tr>
@@ -77,12 +79,12 @@
           'light-red': client.segmentAnalysis === 'Rechazado',
           'light-green': client.segmentAnalysis === 'Aprobado',
           'light-yellow': client.segmentAnalysis === 'Observado'
-        }">{{ client.firstName }}</td>
+        }" class="small-width-column">{{ client.firstName }}</td>
         <td [ngClass]="{
           'light-red': client.segmentAnalysis === 'Rechazado',
           'light-green': client.segmentAnalysis === 'Aprobado',
           'light-yellow': client.segmentAnalysis === 'Observado'
-        }">{{ client.lastName }}</td>
+        }" class="small-width-column">{{ client.lastName }}</td>
         <td [ngClass]="{
           'light-red': client.segmentAnalysis === 'Rechazado',
           'light-green': client.segmentAnalysis === 'Aprobado',
@@ -92,7 +94,7 @@
           'light-red': client.segmentAnalysis === 'Rechazado',
           'light-green': client.segmentAnalysis === 'Aprobado',
           'light-yellow': client.segmentAnalysis === 'Observado'
-        }">{{ client.email }}</td>
+        }" >{{ client.email }}</td>
         <td [ngClass]="{
           'light-red': client.segmentAnalysis === 'Rechazado',
           'light-green': client.segmentAnalysis === 'Aprobado',
@@ -107,11 +109,15 @@
           'light-red': client.segmentAnalysis === 'Rechazado',
           'light-green': client.segmentAnalysis === 'Aprobado',
           'light-yellow': client.segmentAnalysis === 'Observado'
+        }" class="small-width-column">{{ parseToNumber(client.transferAmount) | currencyFormat}}</td>
+        <td [ngClass]="{
+          'light-red': client.segmentAnalysis === 'Rechazado',
+          'light-green': client.segmentAnalysis === 'Aprobado',
+          'light-yellow': client.segmentAnalysis === 'Observado'
         }">
           <button class="btn btn-sm btn-action btn-prome-blue" (click)="openModal('Segment', client)">
-            Detalle
+            <i class="fas fa-info-circle"></i>
           </button>
-
           <button class="btn btn-sm btn-warning btn-action" [disabled]="isButtonDisabled(client, 'reject')"
             (click)="openModal('Observation', client)">
             Observar
@@ -131,13 +137,13 @@
           'light-yellow': client.financeAnalysis === 'Observado'
         }">
           <button class="btn btn-sm btn-action btn-prome-blue" (click)="openModal('Finance', client)">
-            Detalle
+            <i class="fas fa-info-circle"></i>
           </button>
-          <button class="btn btn-sm btn-success btn-action" [disabled]="isButtonDisabled(client, 'accept')"
-            (click)="handleAnalysis(client, 'financeAnalysisApproved')">
+          <button class="btn btn-sm btn-success btn-action" [disabled]="isFinanceActionDisabled(client, 'accept')"
+            (click)="openModal('PaymentConfirmation', client)">
             <i class="fa-solid fa-check"></i>
           </button>
-          <button class="btn btn-sm btn-danger btn-action" [disabled]="isButtonDisabled(client, 'reject')"
+          <button class="btn btn-sm btn-danger btn-action" [disabled]="isFinanceActionDisabled(client, 'reject')"
             (click)="handleAnalysis(client, 'financeAnalysisRejected')">
             <i class="fa-solid fa-xmark"></i>
           </button>
@@ -166,12 +172,8 @@
             <table class="table prome-table" style="border-radius: 10px;">
               <tbody>
                 <tr>
-                  <td>Nombre</td>
-                  <td>{{ selectedClient?.firstName }}</td>
-                </tr>
-                <tr>
-                  <td>Apellido</td>
-                  <td>{{ selectedClient?.lastName }}</td>
+                  <td>Nombre y apellido</td>
+                  <td>{{ selectedClient?.firstName }}, {{ selectedClient?.lastName }}</td>
                 </tr>
                 <tr>
                   <td>DNI</td>
@@ -180,22 +182,6 @@
                 <tr>
                   <td>Correo electrónico</td>
                   <td>{{ selectedClient?.email }}</td>
-                </tr>
-                <tr>
-                  <td>Confirmación correo electrónico</td>
-                  <td>{{ selectedClient?.email }}</td>
-                </tr>
-                <tr>
-                  <td>Tipo de teléfono</td>
-                  <td>{{ selectedClient?.phoneType }}</td>
-                </tr>
-                <tr>
-                  <td>Código de área</td>
-                  <td>{{ selectedClient?.areaCode }}</td>
-                </tr>
-                <tr>
-                  <td>Número de teléfono</td>
-                  <td>{{ selectedClient?.phoneNumber }}</td>
                 </tr>
                 <tr>
                   <td>Período de la promoción</td>
@@ -229,7 +215,7 @@
                   <td>{{ selectedClient?.BIPCredit }}</td>
                 </tr>
                 <tr>
-                  <td>Análisis de segmento</td>
+                  <td>Análisis de Segmentos</td>
                   <td>{{ selectedClient?.segmentAnalysis }}</td>
                 </tr>
                 <tr>
@@ -242,7 +228,7 @@
                 </tr>
                 <tr>
                   <td>Importe a transferir</td>
-                  <td>{{ selectedClient?.transferAmount }}</td>
+                  <td>{{ parseToNumber(selectedClient?.transferAmount) | currencyFormat }}</td>
                 </tr>
               </tbody>
             </table>
@@ -282,40 +268,12 @@
                   <td>{{selectedClient?.cuit}}</td>
                 </tr>
                 <tr>
-                  <td>Fecha de liquidación préstamo</td>
-                  <td>{{ selectedClient?.loanSettlementDate }}</td>
-                </tr>
-                <tr>
-                  <td>Monto de ventas por Cuenta DNI Comercios</td>
-                  <td>{{ selectedClient?.salesAmountCtaDNICom }}</td>
-                </tr>
-
-                <tr>
-                  <td>Link del adjunto</td>
-                  <td><a href="javascript:void(0);"
-                      (click)="selectedClient?.attachmentLink && openModal('Image', selectedClient!, selectedClient!.attachmentLink)">Ver
-                      imagen</a>
-                  </td>
+                  <td>Período de la promoción</td>
+                  <td>{{ selectedClient?.salesPeriod }}</td>
                 </tr>
                 <tr>
                   <td>CBU</td>
                   <td>{{ selectedClient?.CBU }}</td>
-                </tr>
-                <tr>
-                  <td>Crédito BIP</td>
-                  <td>{{ selectedClient?.BIPCredit }}</td>
-                </tr>
-                <tr>
-                  <td>Análisis de segmento</td>
-                  <td>{{ selectedClient?.segmentAnalysis }}</td>
-                </tr>
-                <tr>
-                  <td>Análisis de administración de finanzas</td>
-                  <td>{{ selectedClient?.financeAnalysis }}</td>
-                </tr>
-                <tr>
-                  <td>Observación</td>
-                  <td>{{ selectedClient?.observation }}</td>
                 </tr>
                 <tr>
                   <td>¿Pago realizado?</td>
@@ -323,7 +281,7 @@
                 </tr>
                 <tr>
                   <td>Importe a transferir</td>
-                  <td>{{ selectedClient?.transferAmount }}</td>
+                  <td>{{ parseToNumber(selectedClient?.transferAmount) | currencyFormat }}</td>
                 </tr>
               </tbody>
             </table>
@@ -344,15 +302,15 @@
         </div>
         <div class="modal-body" [ngClass]="{'modal-body': true}">
           <div class="form-group">
-            <textarea class="form-control" id="observationInput" rows="8" maxlength="1200" [(ngModel)]="observationText"
-              (input)="updateCharacterCount()"></textarea>
+            <textarea class="form-control" id="observationInput" rows="8" maxlength="1200" [(ngModel)]="observation"
+              (input)="updateCharacterCount(observation)"></textarea>
             <small class="text-muted character-count text-right mt-1">{{ characterCount }}/{{ maxCharacterCount
               }}</small>
           </div>
           <br>
           <div class="my-2">
             <button class="btn btn-primary" (click)="observeClient(selectedClient)"
-              [disabled]="observationText.length === 0">Confirmar</button>
+              [disabled]="observation.length === 0">Confirmar</button>
           </div>
         </div>
       </div>
@@ -370,6 +328,38 @@
         </div>
         <div class="modal-body d-flex justify-content-center">
           <img [src]="imageModal" alt="Imagen adjunta" height="600px" width="300px">
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Payment Confirmation -->
+    <div class="modal-dialog modal-lg" *ngIf="modalType === 'PaymentConfirmation'">
+      <div class="modal-content">
+        <div class="modal-header mb-4">
+          <h5 class="modal-title">Confirmación de pago</h5>
+          <button type="button" class="btn close" (click)="closeModal()">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body" [ngClass]="{'modal-body': true}">
+          <div class="form-group d-flex justify-content-center">
+            <input type="file" accept="image/*" (change)="onFileSelected($event, selectedClient!)">
+          </div>
+          <div class="d-flex justify-content-center mb-4">
+            <img [src]="selectedClient?.paymentReceiptImage" alt="Comprobante de pago" height="150px"
+              *ngIf="selectedClient?.paymentReceiptImage">
+          </div>
+          <div class="form-group mb-4">
+            <textarea class="form-control" id="observationInput" rows="8" maxlength="1200"
+              [(ngModel)]="paymentObservation" (input)="updateCharacterCount(paymentObservation)"
+              placeholder="Ingresá un comentario"></textarea>
+            <small class="text-muted character-count text-right mt-1">{{ characterCount }}/{{ maxCharacterCount
+              }}</small>
+          </div>
+          <div class="my-2">
+            <button class="btn btn-primary" (click)="handleAnalysis(selectedClient!, 'financeAnalysisApproved')"
+              [disabled]="paymentObservation.length === 0 || !selectedClient?.paymentReceiptImage">Confirmar</button>
+          </div>
         </div>
       </div>
     </div>
