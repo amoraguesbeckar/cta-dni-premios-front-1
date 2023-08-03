@@ -1,8 +1,11 @@
+import { last } from "rxjs";
+
 export class Client {
     id: number;
     trackingNumber: string;
     firstName: string;
     lastName: string;
+    fullName:string;
     dni: string;
     email: string;
     emailConfirmation: string;
@@ -54,6 +57,7 @@ export class Client {
         this.trackingNumber = trackingNumber;
         this.firstName = firstName;
         this.lastName = lastName;
+        this.fullName=firstName +' '+lastName;
         this.dni = dni;
         this.email = email;
         this.emailConfirmation = emailConfirmation;
@@ -74,5 +78,10 @@ export class Client {
         this.transferAmount = transferAmount;
         this.paymentReceiptImage = paymentReceiptImage;
         this.paymentObservation = paymentObservation;
+    }
+
+    getFullName()
+    {
+        return this.firstName + ' ' + this.lastName;
     }
 }

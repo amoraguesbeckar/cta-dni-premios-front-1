@@ -19,11 +19,16 @@ export class ClientService {
     return this.httpClient.get(environment.api);
   }
 
-  public patchRecords(recordsToBePatched: RecordPatch[]) {
+  public async patchRecords(recordsToBePatched: RecordPatch[]) {
+
     recordsToBePatched.map(record => {
-      let patchDTOArray = []
-      patchDTOArray.push(record.patchDTO)
-      this.httpClient.patch(environment.api + '/' + record.dni + '/' + record.cuit, patchDTOArray).subscribe((response) => { console.log(response) }, error => console.error('error ' + error.message))
+      
+      if(record.cuit.length==0)
+        record.cuit=''
+      this.httpClient.patch(environment.api + '/' + record.dni + '/' + record.cuit, record.patchDTO).subscribe((response) => { console.log(response) }, error =>{console.error('error ' + error.message);throw new Error()} )
+    
+      
     })
+    
   }
 }
